@@ -7,7 +7,7 @@ sk = "v-ut4LKmaPvEjawEOUbcfwcUiP0j-MfnLRnC2in9"
 
 import json
 import requests
-from face_det.ava_auth import AuthFactory
+from face_det_module.ava_auth import AuthFactory
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import as_completed
 
@@ -26,23 +26,21 @@ def url_gen(json_file):
             urls.append(url)
     return urls
 
-def request(img_url):
+def request(img_url, token):
     # res = {'url':img_url,'det':[]}
     res = None
     request_url = 'http://argus.atlab.ai/v1/face/detect'
     headers = {"Content-Type": "application/json"}
     body = json.dumps({"data": {"uri": img_url}})
-    token = token_gen(ak,sk)
+    # token = token_gen(ak,sk)
     try:
         r = requests.post(request_url, data=body,timeout=15, headers=headers, auth=token)
     except Exception as e:
         raise e
-        # print('http error.')
     else:
         if r.status_code == 200:
             r = r.json()
             if r['code'] == 0 and r['result']['detections'] is not None:
-                #res['det'] = r['result']['detections']
                 res = r['result']['detections']
             else:
                 # raise Exception("No face")
@@ -51,7 +49,7 @@ def request(img_url):
             raise Exception('http err --> %d'%r.status_code)
     return res
 
-def face_det(img_urls, log, num_thread=10):
+def face_det(img_urls, log, ak, sk, num_thread=10):
     """
     multithread face detect
     Args:
@@ -66,9 +64,10 @@ def face_det(img_urls, log, num_thread=10):
         [{'url':'xxx',
           'det':[{},{},...]}]
     """
+    token = token_gen(ak, sk)
     with open(log,'w') as f_log:
         with ThreadPoolExecutor(max_workers=num_thread) as exe:
-            future_tasks = {exe.submit(request, url): url for url in img_urls}
+            future_tasks = {exe.submit(request, url, token): url for url in img_urls}
             all_url = len(future_tasks)
             count = 1
             for task in as_completed(future_tasks):
