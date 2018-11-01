@@ -321,8 +321,9 @@ def features(aligned_log, feat_log, config_json, save_dir='cache/features'):
     -----
     aligned_log : json file
         {'aligned':'/path to aligned face img',
-         'feat':'/path to feat file',
-         'group': -1}
+         'aligned_url':'aligned face url',
+         'url': img url,
+         'det': det result}
     config_json : feature extract network config file
     save_dir : dir to save features
     """
@@ -332,13 +333,13 @@ def features(aligned_log, feat_log, config_json, save_dir='cache/features'):
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     feat_extractor = MxnetFeatureExtractor(config_json)
-    items = []
+    items = [] # 对齐结果json
     face_list = []
     with open(aligned_log,'r') as f:
         for line in f:
             line = json.loads(line.strip())
             items.append(line)
-            face_list.append(line['aligned'])
+            face_list.extend(line['aligned'])
     if face_list == []:
         print('no face to extract feat')
         return -2
@@ -346,12 +347,15 @@ def features(aligned_log, feat_log, config_json, save_dir='cache/features'):
     ftrs = feat_extractor.extract_features_for_image_list(face_list)
     with open(feat_log,'w') as f:
         for i in range(len(items)):
-            spl = osp.split(items[i]['aligned'])
+            feat_log_line = {}
+            spl = osp.split(face_list[i])
             base_name = spl[-1]
             save_name = osp.splitext(base_name)[0] + '.npy'
             feat_fn = osp.abspath(osp.join(save_dir,save_name))
             np.save(feat_fn,ftrs[i])
-            items[i]['feat'] = feat_fn
-            f.write(json.dumps(items[i]))
+            feat_log_line['feat'] = feat_fn
+            feat_log_line['aligned'] = items[i]['aligned']
+            feat_log_line['aligned_url'] = items[i]['aligned_url']
+            f.write(json.dumps(feat_log_line))
             f.write('\n')
     return 0
