@@ -1,6 +1,15 @@
 # -*- coding: utf-8 -*-
-from mtcnn_aligner.align import MtcnnAligner
-from mtcnn_aligner import align
+
+import os
+import cv2
+import uuid
+import urllib
+import json
+import numpy as np
+from align import MtcnnAligner
+from fx_warp_and_crop_face import warp_and_crop_face, get_reference_facial_points
+import align
+from upload import upload
 
 def _parse_det(det_list,threshold=0.5):
     """
@@ -47,7 +56,7 @@ def align_crop(img_url, aligner, rect_list, output_size=(112,112), scale=1.5,
                default_square=True,
                inner_padding_facter=0,
                outer_padding=(0,0),
-               gpu_id=-1):
+               gpu_id=0):
     """
     single image processing
     Args:
@@ -77,8 +86,8 @@ def align_crop(img_url, aligner, rect_list, output_size=(112,112), scale=1.5,
         res = urllib.urlopen(img_url)
         img = np.asarray(bytearray(res.read()),dtype='uint8')
         img = cv2.imdecode(img,cv2.IMREAD_COLOR)
-    except:
-        pass
+    except Exception as e:
+        print("%s ---> %s"%(img_url, e))
     if img is None:
         return None
     for rect in rect_list:
@@ -98,7 +107,7 @@ def align_crop(img_url, aligner, rect_list, output_size=(112,112), scale=1.5,
         cv2.imwrite(dst_name,dst_img)
     return face_list
 
-def face_align_crop(det_log, model_path, save_dir, align_log, threshold=0.5, gpu_id=-1):
+def face_align_crop(det_log, model_path, save_dir, align_log, threshold=0.5, gpu_id=0):
     """
     batch align
     write aligned face img and log to disk 
@@ -109,9 +118,6 @@ def face_align_crop(det_log, model_path, save_dir, align_log, threshold=0.5, gpu
     model_path : face align model path
     save_dir : dir to save aligned face imgs
     align_log : face align and crop log json file
-        {'aligned':'/path/alignedimg',
-         'feat':'/path/feat',
-          'group': num}
     threshold : face threshold
 
     Return:
@@ -140,7 +146,6 @@ def face_align_crop(det_log, model_path, save_dir, align_log, threshold=0.5, gpu
                 # 上传到face-cluster bucket
                 print('upload face imgs')
                 upload(aligned_imgs,'face-cluster')
-                #upload(list(id_urls_dict.values()[0]),'face-cluster')
                 print('upload done.')
 
                 for aligned_img in aligned_imgs:

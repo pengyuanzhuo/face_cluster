@@ -7,10 +7,10 @@ import json
 import urllib
 import numpy as np
 import uuid
-from mtcnn_aligner.fx_warp_and_crop_face import warp_and_crop_face, get_reference_facial_points
+from fx_warp_and_crop_face import warp_and_crop_face, get_reference_facial_points
 import math
 import mxnet as mx
-from facex_lib.upload import upload
+# from facex_cluster.upload import upload
 
 def _adjust_input(in_data):
     """
