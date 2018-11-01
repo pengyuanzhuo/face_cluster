@@ -148,9 +148,18 @@ def face_align_crop(det_log, model_path, save_dir, align_log, threshold=0.5, gpu
                 upload(aligned_imgs,'face-cluster')
                 print('upload done.')
 
+                aligned = []
+                aligned_url = []
                 for aligned_img in aligned_imgs:
                     flag = 0
-                    item = {'aligned':aligned_img,'feat':'-1','group':-1}
-                    f_align.write(json.dumps(item))
-                    f_align.write('\n')
+                    aligned.append(aligned_img)
+                    aligned_img_url = "http://phi602uqv.bkt.clouddn.com/" + \
+                                      os.path.split(aligned_img)[-1]
+                    aligned_url.append(aligned_img_url)
+                item = {'aligned': aligned,
+                        'aligned_url': aligned_url,
+                        'url': img_url,
+                        'det': det}
+                f_align.write(json.dumps(item))
+                f_align.write('\n')
     return flag
