@@ -1,5 +1,5 @@
  {
-    "network_model": "/workspace/facex-lib/feat_model/model-r100-slim,96",
+    "network_model": "./models/feat_model/model-r100-slim,96",
     "feature_layer": "fc1_output",
     "batch_size": 4,
     "input_width": 112,
