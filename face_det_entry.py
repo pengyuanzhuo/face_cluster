@@ -2,8 +2,8 @@
 
 from face_det_module.face_det import face_det
 
-ak = "4h1yz7uIQf58BSh5vKaiTnFYw5Hl6a4aWmNjTaYH" 
-sk = "v-ut4LKmaPvEjawEOUbcfwcUiP0j-MfnLRnC2in9"
+ak = "4h1yz7uIQf58BS*****" 
+sk = "****cfwcUiP0j-MfnLRnC2in9"
 
 def urls(urlfile):
     url_list = []
