@@ -9,7 +9,9 @@ import numpy as np
 from align import MtcnnAligner
 from fx_warp_and_crop_face import warp_and_crop_face, get_reference_facial_points
 import align
-from upload import upload
+import sys
+sys.path.append('../')
+from face_cluster.upload import upload_concurrent
 
 def _parse_det(det_list,threshold=0.5):
     """
@@ -107,18 +109,21 @@ def align_crop(img_url, aligner, rect_list, output_size=(112,112), scale=1.5,
         cv2.imwrite(dst_name,dst_img)
     return face_list
 
-def face_align_crop(det_log, model_path, save_dir, align_log, threshold=0.5, gpu_id=0):
+def face_align_crop(det_log, model_path, save_dir, bucket_name, ak, sk, align_log, threshold=0.5, gpu_id=0):
     """
-    batch align
-    write aligned face img and log to disk 
+    人脸对齐和crop, 将crop的人脸保存到本地, 并上传到bucket
 
     Args:
     -----
     det_log : face det log json file
-    model_path : face align model path
-    save_dir : dir to save aligned face imgs
-    align_log : face align and crop log json file
-    threshold : face threshold
+    model_path : 人脸对齐模型目录
+    save_dir : 保存crop后人脸的目录, 每个人脸以uuid命名
+    bucket_name : 人脸上传bucket名
+    ak : bucket 所在账号对应ak
+    sk : ...sk
+    align_log : 输出结果
+    threshold : 人脸阈值
+    gpu_id : 指定gpu, -1==cpu
 
     Return:
     -------
@@ -144,17 +149,15 @@ def face_align_crop(det_log, model_path, save_dir, align_log, threshold=0.5, gpu
                     continue
 
                 # 上传到face-cluster bucket
-                print('upload face imgs')
-                upload(aligned_imgs,'face-cluster')
+                print('upload face imgs in %s'%img_url)
+                url_dict = upload_concurrent(aligned_imgs, buakct_name, ak, sk, thread=5)
                 print('upload done.')
+                flag = 0
 
                 aligned = []
                 aligned_url = []
-                for aligned_img in aligned_imgs:
-                    flag = 0
+                for aligned_img, aligned_img_url in url_dict.items():
                     aligned.append(aligned_img)
-                    aligned_img_url = "http://phi602uqv.bkt.clouddn.com/" + \
-                                      os.path.split(aligned_img)[-1]
                     aligned_url.append(aligned_img_url)
                 item = {'aligned': aligned,
                         'aligned_url': aligned_url,
@@ -163,3 +166,4 @@ def face_align_crop(det_log, model_path, save_dir, align_log, threshold=0.5, gpu
                 f_align.write(json.dumps(item))
                 f_align.write('\n')
     return flag
+
