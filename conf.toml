@@ -1,0 +1,41 @@
+[conductor]
+groupId = "qiniu.com"
+artifactId = "conductor-server"
+version = "1.0"
+profile = "dev_image_detect"
+secretKey = ""
+
+[workflow]
+groupId = "qiniu.com"
+artifactId = "conductor-workflow"
+version = "1.0"
+profile = "dev_image_face_cluster"
+secretKey = ""
+
+[download]
+groupId = "qiniu.com"
+artifactId = "bucket-download"
+version = "1.0"
+profile = "dev_image_face_cluster"
+secretKey = ""
+
+[upload]
+groupId = "qiniu.com"
+artifactId = "bucket-upload"
+version = "1.0"
+profile = "dev_image_face_cluster"
+secretKey = ""
+
+[atnet]
+groupId = "qiniu.com"
+artifactId = "ava-atnet"
+version = "1.0"
+profile = "dev_image_face_cluster"
+secretKey = ""
+
+[mongo]
+groupId = "qiniu.com"
+artifactId = "mongo-server"
+version = "0.1"
+profile = "dev"
+secretKey = ""
