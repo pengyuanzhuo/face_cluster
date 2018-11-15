@@ -7,7 +7,7 @@ import shutil
 import os
 import sys
 
-def clusters(feat_log,cluster_log,threshold,nProcess=1):
+def clusters(feat_log, cluster_log, threshold, nProcess=1):
     """
     threshold : cluster threshold
     """
@@ -19,14 +19,16 @@ def clusters(feat_log,cluster_log,threshold,nProcess=1):
         for line in f:
             line = json.loads(line.strip())
             feat = line['feat']
-            face = line['aligned']
+            face = line['aligned_url']
             feat_face_dict[feat] = face
     if feat_face_dict == {}:
         print('no face to cluster')
         return -2
+    print(feat_face_dict.keys())
     # feats n X dimshi
-    feats, feat_path_list = multiprocess_feature_data_reader(feat_face_dict.keys(),nProcess)
+    feats, feat_path_list = multiprocess_feature_data_reader(feat_face_dict.keys(), nProcess)
     # --- cluster ---
+    print("feat shape --->", feats.shape)
     clusters = hcluster.fclusterdata(feats,
                                      threshold,
                                      metric="cosine",
@@ -50,14 +52,15 @@ def clusters(feat_log,cluster_log,threshold,nProcess=1):
 
     # 封装成指定格式输出
     item_list = []
-    for id,urls in id_urls_dict.items():
+    for id, urls in id_urls_dict.items():
         item = {}
         item['cluster_id'] = id
-        item['img_lst'] = [{'url': 'http://pd6q73oht.bkt.clouddn.com/' + os.path.split(url)[-1]} for url in urls]
+        item['img_lst'] = [{"url": url} for url in urls]
         item_list.append(item)
     with open(cluster_log,'w') as f:
-        json.dump(item_list,f,indent=4)
+        json.dump(item_list, f, indent=4)
     return 0
 
 if __name__ == "__main__":
     clusters('./feat.json', './cluster.json', 0.6)
+

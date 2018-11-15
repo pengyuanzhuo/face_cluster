@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 # @Author:Zhaoyafei
-# @Modified by:peng
 
 import os
 import os.path as osp
@@ -128,6 +127,7 @@ class MxnetFeatureExtractor(object):
 
         net = edict()
         net.ctx = self.net_ctx
+
         net.sym, net.arg_params, net.aux_params = mx.model.load_checkpoint(
             prefix, epoch)
 
@@ -138,6 +138,8 @@ class MxnetFeatureExtractor(object):
         net.model.bind(
             data_shapes=[('data', data_shape)])
         net.model.set_params(net.arg_params, net.aux_params)
+
+        time.sleep(10)
 
         self.net = net
         self.input_blob = np.zeros(data_shape, dtype=np.float32)
@@ -332,6 +334,7 @@ def features(aligned_log, feat_log, config_json, save_dir='cache/features'):
         return -1
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
+
     feat_extractor = MxnetFeatureExtractor(config_json)
     face_list = []
     face_url_list = []

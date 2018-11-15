@@ -39,7 +39,6 @@ def feature_data_reader_fromList(filePathList):
         feature_list = np.load(filePathList[0])
     else:
         feature_list = load_mat(filePathList[0])
-    print (feature_list.shape)
     assert feature_list.shape[0] > 0
     # Concat else
     cnt = 0
