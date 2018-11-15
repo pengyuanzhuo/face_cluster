@@ -114,5 +114,5 @@ dmypy.json
 
 # Mac
 .DS_Store
-
+*.pyc
 *.swp
