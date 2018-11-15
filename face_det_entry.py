@@ -7,7 +7,6 @@ import ConfigParser
 from conductor.sdk import ConductorSDK
 from face_det_module.face_det import face_det
 
-
 def urls(urlfile):
     url_list = []
     with open(urlfile, 'r') as f:
