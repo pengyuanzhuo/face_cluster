@@ -60,7 +60,7 @@ def upload(local_file, bucket_name, ak, sk, bucket_host=None, prefix=None, key=N
         key = os.path.split(local_file)[-1]
 
     if prefix is not None:
-        key = prefix + '/' + key
+        key = os.path.join(prefix, key)
 
     token = auth.upload_token(bucket_name, key, 3600)
     ret, info = put_file(token, key, local_file)
@@ -114,5 +114,43 @@ def upload_concurrent(file_list, bucket_name, ak, sk, prefix=None, key=None, thr
                     print('%d / %d %s --> %s'%(count, all_file, local_file, e))
                 count += 1
                 url_dict[local_file] = url
+    return url_dict
+
+def upload_dir(root_dir, bucket_name, ak, sk, keep_struct=True, prefix=None, thread=10):
+    """
+    上传文件夹内容
+    Args:
+    ----
+    root_dir: 待上传根目录, 该目录下所有文件都将被上传.
+              skip 隐藏文件, __MACOSX
+    bucket_name: 指定上传的bucket
+    ak: bucket所在账号的access key
+    sk: ..secret key
+    prefix: 上传前缀, 默认为None
+    keep_struct: bool, 上传后是否保持原目录结构, 默认True
+    thread: 上传线程数, 默认10
+
+    Return:
+    url_dict: 上传结果dict {local_file: url}
+              若某个文件上传失败, 则对应的url为None
+
+    Warining: UNCLEAR IN MEANING!!! (TODO)
+    """
+    url_dict = {}
+
+    # 遍历目录
+    for root, _, files in os.walk(root_dir):
+        files_fn_list = [os.path.join(root, file) for file in files
+                         if not (file.startswith('.') and 
+                            file == "__MACOSX")]
+        if keep_struct:
+            sub_dir = root.split(root_dir)[-1]
+            sub_dir = sub_dir.strip('/')
+            _prefix = os.path.join(prefix, sub_dir) if prefix is not None else sub_dir
+        else:
+            _prefix = prefix
+        sub_url_dict = upload_concurrent(files_fn_list, bucket_name, ak, sk, _prefix, thread=thread)
+        url_dict.update(sub_url_dict)
+
     return url_dict
 
