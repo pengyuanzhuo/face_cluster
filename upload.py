@@ -10,6 +10,19 @@ import qiniu.config
 from concurrent.futures import as_completed
 from concurrent.futures import ThreadPoolExecutor
 
+def refresh_cdn(url, auth):
+    """
+    强制刷新cdn缓存
+    """
+    hearders = {"Content-Type": "application/json"}
+    request_url = "http://fusion.qiniuapi.com//v2/tune/refresh"
+    data = {"urls": [url]}
+    data = json.dumps(data)
+    try:
+        res = requests.post(request_url, headers=headers, data=data, timeout=30)
+    except Exception as e:
+        raise requests.RequestException("refresh error -> %s" % e)
+
 def get_bucket_host(bucket_name, auth=None, ak=None, sk=None):
     """
     获取指定bucket的host
@@ -69,8 +82,9 @@ def upload(local_file, bucket_name, ak, sk, bucket_host=None, prefix=None, key=N
 
     url = bucket_host + '/' + key
     # 强制刷新CDN
-    rd = int(round(time.time()*1000))
-    url = url + '?v=%d'%rd
+    refresh_cdn(url)
+    #rd = int(round(time.time()*1000))
+    #url = url + '?v=%d'%rd
     return url
 
 
